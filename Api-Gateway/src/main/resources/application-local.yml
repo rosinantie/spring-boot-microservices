@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    activate:
+      on-profile: local
+  cloud:
+<<<<<<< HEAD
+=======
+    config:
+      enabled: false
+>>>>>>> 9cdcdc0 (Initial monorepo commit)
+    gateway:
+      routes:
+        - id: customer-service
+          uri: lb://CUSTOMER-SERVICE
+          predicates:
+            - Path=/apis/customers/**  # Forward requests starting with /customers/
+<<<<<<< HEAD
+
+=======
+        - id: product-service
+          uri: lb://PRODUCTS-SERVICE
+          predicates:
+            - Path=/apis/products/**
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/apis/orders/**
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/apis/notifications/**
+>>>>>>> 9cdcdc0 (Initial monorepo commit)
+server:
+  port: 9000
+  servlet:
+    context-path: /apis
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+
+logging:
+  level:
+    com.netflix.discovery: INFO
+    org.springframework.cloud: INFO
+

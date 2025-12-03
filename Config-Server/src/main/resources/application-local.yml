@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: Customer-Server
+  cloud:
+    config:
+      server:
+        git:
+          uri: git@github.com-personal:rosinantie/spring-boot-microservices.git
+          search-paths:
+            - Config-Repo
+          default-label: master         # <---- ADD THIS
+          clone-on-start: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/customer-service
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver   # FIXED typo
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+management:
+  security:
+    enabled: false
+
+server:
+  port: 8888
+  servlet:
+    context-path: /apis
+

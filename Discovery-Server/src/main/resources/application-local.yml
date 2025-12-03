@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: eureka-server
+<<<<<<< HEAD
+=======
+  cloud:
+    config:
+      enabled: false
+>>>>>>> 9cdcdc0 (Initial monorepo commit)
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ip_session_001
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+management:
+  security:
+    enabled: false
+
+server:
+  port: 8761
+  # REMOVED context-path
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: localhost
