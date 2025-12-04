@@ -1,11 +1,9 @@
 package com.example.IP_Session_001.controller;
 
 import com.example.IP_Session_001.entity.Order;
-<<<<<<< HEAD
 import com.example.IP_Session_001.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
-=======
 import com.example.IP_Session_001.feign.CustomerClient;
 import com.example.IP_Session_001.service.OrderService;
 
@@ -14,38 +12,24 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
->>>>>>> 9cdcdc0 (Initial monorepo commit)
+
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-<<<<<<< HEAD
-import java.util.List;
 
-=======
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
->>>>>>> 9cdcdc0 (Initial monorepo commit)
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
-<<<<<<< HEAD
 
-//    @PostMapping
-//    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-//        return ResponseEntity.ok(orderService.createOrder(order));
-//    }
-
-    @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-=======
     private final CustomerClient customerClient;
 
     // CREATE (Add Order)
@@ -123,6 +107,5 @@ public class OrderController {
         orderService.deleteOrder(id);
         log.info("[DELETE] Order deleted successfully with id: {}", id);
         return ResponseEntity.ok("Order deleted successfully");
->>>>>>> 9cdcdc0 (Initial monorepo commit)
     }
 }

@@ -1,12 +1,9 @@
 spring:
   application:
     name: eureka-server
-<<<<<<< HEAD
-=======
   cloud:
     config:
       enabled: false
->>>>>>> 9cdcdc0 (Initial monorepo commit)
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

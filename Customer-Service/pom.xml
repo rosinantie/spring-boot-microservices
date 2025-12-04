@@ -44,15 +44,12 @@
                 <spring-boot.run.profiles>render</spring-boot.run.profiles>
             </properties>
         </profile>
-<<<<<<< HEAD
-=======
         <profile>
             <id>dev</id>
             <properties>
                 <spring-boot.run.profiles>dev</spring-boot.run.profiles>
             </properties>
         </profile>
->>>>>>> 9cdcdc0 (Initial monorepo commit)
     </profiles>
 
     <dependencies>
@@ -111,8 +108,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-<<<<<<< HEAD
-=======
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -120,7 +115,6 @@
         </dependency>
 
 
->>>>>>> 9cdcdc0 (Initial monorepo commit)
     </dependencies>
 
     <!-- ADD THIS SECTION -->

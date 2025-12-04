@@ -4,13 +4,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record CustomerRequest(
-        @NotBlank(message = "First name is required")
-        String firstName,
+                @NotBlank(message = "First name is required") String firstName,
 
-        String lastName,
+                String lastName,
 
-        @Email @NotBlank(message = "Email is required")
-        String email,
+                @Email @NotBlank(message = "Email is required") String email,
 
-        String mobile
-) {}
+                String mobile) {
+}

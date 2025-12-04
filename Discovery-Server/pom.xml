@@ -54,15 +54,12 @@
 				<spring-boot.run.profiles>render</spring-boot.run.profiles>
 			</properties>
 		</profile>
-<<<<<<< HEAD
-=======
         <profile>
             <id>bootstrap</id>
             <properties>
                 <spring-boot.run.profiles>bootstrap</spring-boot.run.profiles>
             </properties>
         </profile>
->>>>>>> 9cdcdc0 (Initial monorepo commit)
 	</profiles>
     <dependencyManagement>
         <dependencies>
@@ -137,9 +134,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-<<<<<<< HEAD
-	</dependencies>
-=======
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -147,7 +141,6 @@
         </dependency>
 
     </dependencies>
->>>>>>> 9cdcdc0 (Initial monorepo commit)
 
 	<build>
 		<plugins>
