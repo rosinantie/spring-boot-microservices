@@ -7,6 +7,8 @@ public interface OrderService {
 
     Order createOrder(Order order);
 
+    Order createOrderWithRabbitMQ(Order order);
+
     Order getOrderById(Long id);
 
     List<Order> getAllOrders();

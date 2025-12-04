@@ -6,6 +6,8 @@ import com.example.IP_Session_001.rabbit.RabbitMQProducerService;
 import com.example.IP_Session_001.repository.OrderRepository;
 import com.example.IP_Session_001.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final KafkaProducerService kafkaProducer;
-    private final RabbitMQProducerService rabbitMQProducer;
+    private final RabbitMQProducerService rabbitMQProducerService;
 
     @Override
     public Order createOrder(Order order) {
@@ -25,7 +27,13 @@ public class OrderServiceImpl implements OrderService {
         // Send to Kafka
         kafkaProducer.sendEvent("order-events", saved);
 
+        return saved;
+    }
 
+    @Override
+    public Order createOrderWithRabbitMQ(Order order) {
+        Order saved = orderRepository.save(order);
+       rabbitMQProducerService.sendEmailMessage(saved);
         return saved;
     }
 

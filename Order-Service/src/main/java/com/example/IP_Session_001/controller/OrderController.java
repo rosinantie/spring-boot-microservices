@@ -41,6 +41,14 @@ public class OrderController {
         return ResponseEntity.ok(savedOrder);
     }
 
+    @PostMapping("/rabbitMq")
+    public ResponseEntity<Order> createOrderRabbitMQ(@RequestBody Order order) {
+        log.info("[CREATE] Received request to create RabbitMQ order: {}", order);
+        Order savedOrder = orderService.createOrderWithRabbitMQ(order);
+        log.info("[CREATE] Order created RabbitMQ successfully: {}", savedOrder);
+        return ResponseEntity.ok(savedOrder);
+    }
+
     // READ ALL
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders() {

@@ -14,6 +14,6 @@ public class RabbitMQProducerService {
 
     public void sendEmailMessage(Object message) {
         log.info("[RABBITMQ] Sending email task: {}", message);
-        rabbitTemplate.convertAndSend("emailQueue", message);
+        rabbitTemplate.convertAndSend("order-exchange", "order.routing", message);
     }
 }

@@ -1,9 +1,21 @@
+app:
+  rabbitmq:
+    exchange: order-exchange
+    queue: order-queue
+    routing-key: order.routing
+
 spring:
   application:
     name: notification-service
   cloud:
     config:
       enabled: false
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
