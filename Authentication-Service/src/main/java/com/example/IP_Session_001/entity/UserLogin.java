@@ -1,5 +1,15 @@
 package com.example.IP_Session_001.entity;
 
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 @Entity
 @Table(name = "user_login")
 @Getter
@@ -8,7 +18,6 @@ package com.example.IP_Session_001.entity;
 @AllArgsConstructor
 @Builder
 public class UserLogin {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

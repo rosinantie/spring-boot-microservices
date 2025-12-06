@@ -1,3 +1,8 @@
+project:
+  app:
+    jwtSecret: eW91cl9jbGllbnRfaWQ6eW91cl9jbGllbnRfc2VjcmV0
+    jwtExpirationMs: 86400000
+
 spring:
   application:
     name: api-gateway
@@ -25,6 +30,10 @@ spring:
           uri: lb://NOTIFICATION-SERVICE
           predicates:
             - Path=/apis/notifications/**
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+              - Path=/apis/user-login/**
 server:
   port: 9000
   servlet:

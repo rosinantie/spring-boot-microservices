@@ -7,7 +7,6 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 
 @Configuration
 public class RestTemplateConfig {
-
     /**
      * Creates a RestTemplate bean that is load-balanced.
      * This allows service-to-service calls using Eureka service names.

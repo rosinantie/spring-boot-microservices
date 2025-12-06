@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponse updateCustomer(Long id, CustomerRequest request) {
+    public CustomerResponse updateCustomer(UUID id, CustomerRequest request) {
         Customer customer = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
@@ -44,15 +45,21 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void deleteCustomer(Long id) {
+    public void deleteCustomer(UUID id) {
         repository.deleteById(id);
     }
 
     @Override
-    public CustomerResponse getCustomer(Long id) {
+    public CustomerResponse getCustomer(UUID id) {
         Customer customer = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
+        return toResponse(customer);
+    }
+
+    @Override
+    public CustomerResponse getCustomerUsingJWT(UUID id) {
+        Customer customer = repository.findById(id).orElseThrow(()-> new RuntimeException("Customer not found"));
         return toResponse(customer);
     }
 
