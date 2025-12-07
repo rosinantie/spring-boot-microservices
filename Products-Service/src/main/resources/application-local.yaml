@@ -1,6 +1,12 @@
 spring:
   application:
     name: products-service
+  cache:
+    type: redis
+  redis:
+    host: localhost
+    port: 6379
+    time-to-live: 600000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
