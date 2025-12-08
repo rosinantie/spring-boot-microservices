@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,21 +40,23 @@ public class CustomerController {
     }
 
     @GetMapping("/getUsingJWT")
-    public ResponseEntity<CustomerResponse> getById(
-            @RequestHeader("X-USER") String userIdStr
-    ) {
-        log.info("X-USER :{}",userIdStr);
+    public ResponseEntity<CustomerResponse> getByJwt(@AuthenticationPrincipal Jwt jwt) {
+        String userIdStr = jwt.getSubject(); // sub claim
+        String email = jwt.getClaim("email");
+        log.info("JWT User ID: {}", userIdStr);
+        log.info("JWT User email:{}",email);
         UUID userId = UUID.fromString(userIdStr);
-        return ResponseEntity.ok(service.getCustomerUsingJWT(userId));
+        return ResponseEntity.ok(service.getCustomerUsingEmail(email));
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAll(
-            @RequestHeader("X-USER") String userIdStr
-    ) {
-        log.info("X-USER :{}",userIdStr);
+    public ResponseEntity<List<CustomerResponse>> getAll(@AuthenticationPrincipal Jwt jwt) {
+        String userIdStr = jwt.getSubject();
+        log.info("JWT User ID: {}", userIdStr);
         return ResponseEntity.ok(service.getAllCustomers());
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {

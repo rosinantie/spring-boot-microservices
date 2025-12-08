@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -60,6 +61,14 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse getCustomerUsingJWT(UUID id) {
         Customer customer = repository.findById(id).orElseThrow(()-> new RuntimeException("Customer not found"));
+        return toResponse(customer);
+    }
+
+    @Override
+    public CustomerResponse getCustomerUsingEmail(String email) {
+        Customer customer = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email not found"));
+
         return toResponse(customer);
     }
 

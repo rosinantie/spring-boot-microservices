@@ -18,5 +18,7 @@ public interface CustomerService {
 
     CustomerResponse getCustomerUsingJWT(UUID id);
 
+    CustomerResponse getCustomerUsingEmail(String email);
+
     List<CustomerResponse> getAllCustomers();
 }
