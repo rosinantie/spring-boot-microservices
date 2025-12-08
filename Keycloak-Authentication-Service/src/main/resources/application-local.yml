@@ -3,6 +3,13 @@ project:
     jwtSecret: eW91cl9jbGllbnRfaWQ6eW91cl9jbGllbnRfc2VjcmV0
     jwtExpirationMs: 86400000
 
+keycloak:
+  server-url: http://localhost:8180/
+  realm: auth-realm
+  admin:
+    username: admin
+    password: admin
+
 spring:
   application:
     name: auth-service
@@ -37,7 +44,7 @@ spring:
         registration:
           keycloak:
             client-id: confidential-client
-            client-secret: TqWB8Cnw0QGsjbdwEThe9DG6J1ljZTCG
+            client-secret: Gf3SicdqRrc54s2rJ66DFnEHFQNJtrHu
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
