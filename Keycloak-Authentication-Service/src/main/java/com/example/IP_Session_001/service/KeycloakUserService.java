@@ -11,6 +11,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,40 +38,103 @@ public class KeycloakUserService {
     @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
     private String clientSecret;
 
-    public KeycloakUserCreateResponse createUser(String email, String password, String firstName, String lastName) {
+    public KeycloakUserCreateResponse createUser(String email,
+                                                 String password,
+                                                 String firstName,
+                                                 String lastName,
+                                                 List<String> roles) {
 
-        UserRepresentation user = new UserRepresentation();
-        user.setEnabled(true);
-        user.setUsername(email);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
+        String userId = null;
 
-        Response response = keycloak.realm(realm).users().create(user);
-        if (response.getStatus() == 409) {
-            throw new RuntimeException("User already exists");
+        try {
+            UserRepresentation user = new UserRepresentation();
+            user.setEnabled(true);
+            user.setUsername(email);
+            user.setEmail(email);
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+
+            Response response = keycloak.realm(realm).users().create(user);
+
+            if (response.getStatus() == 409) {
+                throw new RuntimeException("User already exists");
+            }
+            if (response.getStatus() != 201) {
+                throw new RuntimeException("Failed to create user: HTTP " + response.getStatus());
+            }
+
+            userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+            log.info("User created with ID: {}", userId);
+
+
+            CredentialRepresentation credential = new CredentialRepresentation();
+            credential.setTemporary(false);
+            credential.setType(CredentialRepresentation.PASSWORD);
+            credential.setValue(password);
+            keycloak.realm(realm)
+                    .users()
+                    .get(userId)
+                    .resetPassword(credential);
+
+            log.info("Password set for user: {}", userId);
+
+
+            assignRolesToUser(userId, roles);  // Will throw exception if role not found
+
+
+            Map<String, Object> token = generateToken(email, password);
+
+
+            return new KeycloakUserCreateResponse(userId, roles, token);
+
+
+        } catch (Exception ex) {
+
+            log.error("Error occurred while creating Keycloak user: {}", ex.getMessage());
+
+            if (userId != null) {
+                try {
+                    keycloak.realm(realm).users().delete(userId);
+                    log.warn("Rollback applied: Deleted user {}", userId);
+                } catch (Exception rollbackEx) {
+                    log.error("Rollback failed! Manual cleanup may be required: {}", rollbackEx.getMessage());
+                }
+            }
+
+            throw new RuntimeException("User creation failed: " + ex.getMessage());
         }
-        if (response.getStatus() != 201) {
-            throw new RuntimeException("Failed: " + response.getStatus());
-        }
-
-        String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-
-        CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setTemporary(false);
-        credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(password);
-
-        keycloak.realm(realm)
-                .users()
-                .get(userId)
-                .resetPassword(credential);
-
-        // NEW: Generate token for the created user
-        Map<String, Object> token = generateToken(email, password);
-
-        return new KeycloakUserCreateResponse(userId, token);
     }
+
+
+    private void assignRolesToUser(String userId, List<String> roles) {
+
+        if (roles == null || roles.isEmpty()) {
+            log.info("No roles provided. Skipping role assignment.");
+            return;
+        }
+
+        var userResource = keycloak.realm(realm).users().get(userId);
+        var realmRoles = keycloak.realm(realm).roles();
+
+        for (String roleName : roles) {
+            try {
+                RoleRepresentation role = realmRoles.get(roleName).toRepresentation();
+
+                if (role == null) {
+                    throw new RuntimeException("Role not found: " + roleName);
+                }
+
+                userResource.roles().realmLevel().add(List.of(role));
+                log.info("Assigned role '{}' to user '{}'", roleName, userId);
+
+            } catch (Exception ex) {
+                log.error("Error while assigning role '{}' to user '{}': {}",
+                        roleName, userId, ex.getMessage());
+                throw new RuntimeException("Failed to assign role: " + roleName);
+            }
+        }
+    }
+
 
 
 

@@ -60,7 +60,8 @@ public class UserController {
                 request.getEmail(),
                 request.getPassword(),
                 request.getFirstName(),
-                request.getLastName()
+                request.getLastName(),
+               request.getRoles()
         );
 
         return ResponseEntity.ok(

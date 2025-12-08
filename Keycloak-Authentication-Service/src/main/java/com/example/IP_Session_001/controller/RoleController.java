@@ -47,4 +47,9 @@ public class RoleController {
         }
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<?> testrole(){
+        return  ResponseEntity.ok("test");
+    }
+
 }
