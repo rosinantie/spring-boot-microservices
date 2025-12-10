@@ -2,6 +2,7 @@ package com.example.IP_Session_001.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
@@ -16,6 +17,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .anyExchange().permitAll()   // Let GlobalFilter handle auth
                 )
+                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
