@@ -33,6 +33,12 @@ spring:
     password: password
     driver-class-name: org.postgresql.Driver
 
+  # ===== MongoDB Connection =====
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/notification_db
+      database: notifications
+
 eureka:
   client:
     service-url:
