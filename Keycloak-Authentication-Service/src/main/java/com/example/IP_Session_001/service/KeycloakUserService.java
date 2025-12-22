@@ -3,6 +3,8 @@ package com.example.IP_Session_001.service;
 import com.example.IP_Session_001.dto.response.KeycloakUserCreateResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -135,9 +137,6 @@ public class KeycloakUserService {
         }
     }
 
-
-
-
     public Map<String, Object> generateToken(String username, String password) {
         try {
             log.info("Generating token for user: {}", username);
@@ -169,6 +168,29 @@ public class KeycloakUserService {
             log.error("Failed to generate token for user: {}", username, e);
             throw new RuntimeException("Cannot generate token: " + e.getMessage());
         }
+    }
+
+
+    public void signinWithCookie(String username, String password, HttpServletResponse response) {
+
+        // Generate the Keycloak token
+        Map<String, Object> tokenMap = generateToken(username, password);
+        String accessToken = (String) tokenMap.get("access_token");
+
+        // Create HTTP-only cookie
+        Cookie cookie = new Cookie("AUTH-TOKEN", accessToken);
+        cookie.setHttpOnly(true);           // JS cannot read the token
+        cookie.setSecure(true);             // use HTTPS in production
+        cookie.setPath("/");                // available for all endpoints
+        Number expiresIn = (Number) tokenMap.getOrDefault("expires_in", 3600);
+
+        int maxAge = expiresIn.intValue();
+
+        cookie.setMaxAge(maxAge);
+        // Add cookie to response
+        response.addCookie(cookie);
+
+        log.info("Signin with cookie successful for user: {}", username);
     }
 
 

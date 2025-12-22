@@ -1,11 +1,13 @@
 package com.example.IP_Session_001.security.config;
 
+import com.example.IP_Session_001.security.service.CookieAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -31,6 +33,12 @@ public class WebSecurityConfig {
                                 "/keycloak-roles/**"          // (optional)
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+
+                // 👇 COOKIE → AUTHORIZATION HEADER
+                .addFilterBefore(
+                        new CookieAuthFilter(),
+                        BearerTokenAuthenticationFilter.class
                 )
 
                 // Enable OAuth2 Resource Server (JWT validation with Keycloak)

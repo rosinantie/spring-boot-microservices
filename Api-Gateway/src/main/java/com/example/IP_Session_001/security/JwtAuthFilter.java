@@ -25,16 +25,20 @@ import java.util.Map;
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
+    private static final String COOKIE_NAME = "AUTH-TOKEN";
+
     private final JwtDecoder jwtDecoder;
 
-    // Public URLs (no JWT required)
     private final List<String> publicEndpoints = List.of(
             "/user-login/signin-keycloak",
             "/user-login/signup",
             "/user-login/create-keycloak"
     );
 
-    public JwtAuthFilter(@Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuerUri) {
+    public JwtAuthFilter(
+            @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+            String issuerUri
+    ) {
         this.jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
     }
 
@@ -44,38 +48,35 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
         log.info("Incoming Request Path: {}", path);
 
-        // 1) Check public endpoints
+        // 1️⃣ Public endpoints
         if (publicEndpoints.stream().anyMatch(path::contains)) {
-            log.info("Public endpoint allowed: {}", path);
             return chain.filter(exchange);
         }
 
-        // 2) Validate Authorization Header
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        // 2️⃣ Extract token (Header OR Cookie)
+        String token = extractToken(exchange);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("Missing or invalid Authorization header");
+        if (token == null) {
+            log.warn("JWT not found in header or cookie");
             return unauthorized(exchange);
         }
 
-        String token = authHeader.substring(7);
-
         try {
-            // 3) Validate JWT with Keycloak
+            // 3️⃣ Validate JWT
             Jwt jwt = jwtDecoder.decode(token);
 
-            String username = jwt.getClaim("preferred_username");
+            String username = jwt.getClaimAsString("preferred_username");
             Map<String, Object> realmAccess = jwt.getClaim("realm_access");
 
-            String roles = "";
-            if (realmAccess != null && realmAccess.get("roles") != null) {
-                roles = realmAccess.get("roles").toString();
-            }
+            String roles = realmAccess != null
+                    ? realmAccess.getOrDefault("roles", List.of()).toString()
+                    : "";
 
-            log.info("JWT Validated | User: {} | Roles: {}", username, roles);
+            log.info("JWT Valid | user={} roles={}", username, roles);
 
-            // 4) Add user info to downstream request
+            // 4️⃣ Forward headers downstream
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .header("X-USER", username)
                     .header("X-ROLES", roles)
                     .build();
@@ -83,9 +84,29 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(modifiedRequest).build());
 
         } catch (Exception ex) {
-            log.error("JWT validation failed: {}", ex.getMessage());
+            log.error("JWT validation failed", ex);
             return unauthorized(exchange);
         }
+    }
+
+    // 🔹 Extract token from Header OR Cookie
+    private String extractToken(ServerWebExchange exchange) {
+
+        // 1) Authorization header
+        String authHeader = exchange.getRequest()
+                .getHeaders()
+                .getFirst(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        // 2) Cookie fallback
+        return exchange.getRequest()
+                .getCookies()
+                .getFirst(COOKIE_NAME) != null
+                ? exchange.getRequest().getCookies().getFirst(COOKIE_NAME).getValue()
+                : null;
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) {
@@ -95,6 +116,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return -1;
+        return -1; // Run early
     }
 }
+

@@ -44,7 +44,7 @@ spring:
         registration:
           keycloak:
             client-id: confidential-client
-            client-secret: Gf3SicdqRrc54s2rJ66DFnEHFQNJtrHu
+            client-secret: RgXqMltsDgxr9kIOYfrzyLvbZOTqSicU
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"

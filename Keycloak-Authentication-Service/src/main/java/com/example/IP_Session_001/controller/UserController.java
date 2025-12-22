@@ -10,6 +10,8 @@ import com.example.IP_Session_001.security.service.AuthService;
 import com.example.IP_Session_001.security.user.UserDetailsImpl;
 import com.example.IP_Session_001.service.KeycloakUserService;
 import com.example.IP_Session_001.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -97,6 +99,44 @@ public class UserController {
         }
     }
 
+    @PostMapping("/signin-keycloak-cookie")
+    public ResponseEntity<?> signinKeycloakWithCookie(
+            @RequestBody AuthRequest request,
+            HttpServletResponse response) {
+
+        try {
+            keycloakUserService.signinWithCookie(request.getEmail(), request.getPassword(), response);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "User signed in successfully (cookie set)"
+            ));
+        } catch (Exception e) {
+            log.error("Failed to sign in user with cookie: {}", request.getEmail(), e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "message", "Sign-in failed",
+                            "error", e.getMessage()
+                    ));
+        }
+    }
+
+
+    @PostMapping("/logout-cookie")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+
+        Cookie cookie = new Cookie("AUTH-TOKEN", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);   // true in prod (HTTPS)
+        cookie.setPath("/");
+        cookie.setMaxAge(0);      // 🔥 delete cookie
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Logged out successfully")
+        );
+    }
+
     @GetMapping("/me-keycloak")
     public ResponseEntity<?> getUserDetails(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -129,6 +169,25 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Cannot retrieve user details", "error", e.getMessage()));
         }
+    }
+
+
+    @GetMapping("/cookie/me-keycloak")
+    public ResponseEntity<?> meKeycloak(@AuthenticationPrincipal Jwt jwt) {
+
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+
+        return ResponseEntity.ok(Map.of(
+                "userId", jwt.getSubject(),
+                "username", jwt.getClaimAsString("preferred_username"),
+                "email", jwt.getClaimAsString("email"),
+                "roles", realmAccess != null ? realmAccess.get("roles") : List.of()
+        ));
     }
 
 
