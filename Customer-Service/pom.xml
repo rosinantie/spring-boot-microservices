@@ -50,6 +50,12 @@
                 <spring-boot.run.profiles>dev</spring-boot.run.profiles>
             </properties>
         </profile>
+        <profile>
+            <id>k8s</id>
+            <properties>
+                <spring-boot.run.profiles>k8s</spring-boot.run.profiles>
+            </properties>
+        </profile>
     </profiles>
 
     <dependencies>

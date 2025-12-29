@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "customer-service:latest"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'develop',
+                    url: 'https://github.com/rosinantie/spring-boot-microservices.git'
+            }
+        }
+
+        stage('Build Customer Service') {
+            steps {
+                dir('Customer-Service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('Customer-Service') {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh """
+                docker stop customer-service || true
+                docker rm customer-service || true
+                docker run -d --name customer-service -p 8081:8081 ${IMAGE_NAME}
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Customer-Service Docker image built and container started ✅'
+        }
+        failure {
+            echo 'Build or Docker deployment failed ❌'
+        }
+    }
+}

@@ -3,3 +3,10 @@
 #    name: Customer-Server
 #  config:
 #    import: "configserver:http://localhost:8888/apis"
+
+spring:
+  profiles:
+    active: k8s
+  cloud:
+    config:
+      enabled: false
