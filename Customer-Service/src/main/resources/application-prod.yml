@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: customer-service
+
+  cloud:
+    config:
+      enabled: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/auth-realm  # Production Keycloak
+
+  datasource:
+    url: jdbc:postgresql://pg-ee86b5c-dilipgona-0cb0.h.aivencloud.com:24161/customer_service_prod?sslmode=require
+    username: avnadmin
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false   # Usually disabled in prod
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8081
+  servlet:
+    context-path: /apis
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.netflix.discovery: INFO
+    com.example: INFO
+    org.springframework: INFO
