@@ -48,12 +48,10 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
         log.info("Incoming Request Path: {}", path);
 
-        // 1️⃣ Public endpoints
         if (publicEndpoints.stream().anyMatch(path::contains)) {
             return chain.filter(exchange);
         }
 
-        // 2️⃣ Extract token (Header OR Cookie)
         String token = extractToken(exchange);
 
         if (token == null) {
@@ -62,7 +60,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         try {
-            // 3️⃣ Validate JWT
             Jwt jwt = jwtDecoder.decode(token);
 
             String username = jwt.getClaimAsString("preferred_username");
@@ -74,7 +71,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
             log.info("JWT Valid | user={} roles={}", username, roles);
 
-            // 4️⃣ Forward headers downstream
             ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .header("X-USER", username)
@@ -89,7 +85,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
     }
 
-    // 🔹 Extract token from Header OR Cookie
     private String extractToken(ServerWebExchange exchange) {
 
         // 1) Authorization header
