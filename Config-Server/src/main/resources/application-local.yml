@@ -8,7 +8,7 @@ spring:
           uri: git@github.com-personal:rosinantie/spring-boot-microservices.git
           search-paths:
             - Config-Repo
-          default-label: master         # <---- ADD THIS
+          default-label: develop        # repo's default branch (no 'master' branch exists)
           clone-on-start: true
 
   datasource:
