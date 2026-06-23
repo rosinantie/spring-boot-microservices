@@ -2,7 +2,7 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: "spring-boot-app"
+  - job_name: "keycloak-auth-service"
     metrics_path: "/apis/actuator/prometheus"
     static_configs:
-      - targets: ["192.168.1.3:8083"]
+      - targets: ["host.docker.internal:8401"]

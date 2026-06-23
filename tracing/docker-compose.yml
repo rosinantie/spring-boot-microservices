@@ -1,0 +1,13 @@
+services:
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    restart: unless-stopped
+    ports:
+      - "9411:9411"
+    networks:
+      - tracing-net
+
+networks:
+  tracing-net:
+    driver: bridge

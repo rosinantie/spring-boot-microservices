@@ -44,7 +44,7 @@ spring:
         registration:
           keycloak:
             client-id: confidential-client
-            client-secret: RgXqMltsDgxr9kIOYfrzyLvbZOTqSicU
+            client-secret: p6HkYRHYzAZs24mdPZPP8pG0elXWZ8ly
             scope: openid,profile,email
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
@@ -83,6 +83,20 @@ management:
   endpoint:
     health:
       show-details: always
+    tracing:
+      sampling:
+        probability: 1.0
+    spring:
+      application:
+        name: auth-service
+      # exclude actuator endpoints from tracing
+    management.metrics.web.server.request.autotime.enabled: true
+    Cleaner approach — Micrometer lets you skip paths. The simplest is a property:
+    management:
+      tracing:
+        enabled: true
+    # don't create observations for actuator
+    management.observations.http.server.requests.name: http.server.requests
 
 logging:
   level:

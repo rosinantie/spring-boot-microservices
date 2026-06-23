@@ -30,7 +30,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/auth/**",
                                 "/user-login/**",
                                 "/roles/**",
-                                "/keycloak-roles/**"          // (optional)
+                                "/keycloak-roles/**",          // (optional)
+                                "/actuator/**"                 // allow Prometheus to scrape metrics
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
