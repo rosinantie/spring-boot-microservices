@@ -1,6 +1,7 @@
 package com.example.IP_Session_001.service.impl;
 
 import com.example.IP_Session_001.entity.Order;
+import com.example.IP_Session_001.feign.NotificationClient;
 import com.example.IP_Session_001.kafka.KafkaProducerService;
 import com.example.IP_Session_001.rabbit.RabbitMQProducerService;
 import com.example.IP_Session_001.repository.OrderRepository;
@@ -19,9 +20,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final KafkaProducerService kafkaProducer;
     private final RabbitMQProducerService rabbitMQProducerService;
+    private final NotificationClient notificationClient;
 
     @Override
-    public Order createOrder(Order order) {
+    public Order createOrderWithKafka(Order order) {
         Order saved = orderRepository.save(order);
 
         // Send to Kafka
@@ -34,6 +36,16 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrderWithRabbitMQ(Order order) {
         Order saved = orderRepository.save(order);
        rabbitMQProducerService.sendEmailMessage(saved);
+        return saved;
+    }
+
+    @Override
+    public Order createOrderWithApi(Order order) {
+        Order saved = orderRepository.save(order);
+
+        // Synchronous REST call to the Notification-Service (no message broker)
+        notificationClient.sendNotification(saved);
+
         return saved;
     }
 

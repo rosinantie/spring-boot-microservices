@@ -33,10 +33,10 @@ public class OrderController {
     private final CustomerClient customerClient;
 
     // CREATE (Add Order)
-    @PostMapping
+    @PostMapping("/kafka")
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         log.info("[CREATE] Received request to create order: {}", order);
-        Order savedOrder = orderService.createOrder(order);
+        Order savedOrder = orderService.createOrderWithKafka(order);
         log.info("[CREATE] Order created successfully: {}", savedOrder);
         return ResponseEntity.ok(savedOrder);
     }
@@ -46,6 +46,14 @@ public class OrderController {
         log.info("[CREATE] Received request to create RabbitMQ order: {}", order);
         Order savedOrder = orderService.createOrderWithRabbitMQ(order);
         log.info("[CREATE] Order created RabbitMQ successfully: {}", savedOrder);
+        return ResponseEntity.ok(savedOrder);
+    }
+
+    @PostMapping("/api")
+    public ResponseEntity<Order> createOrderApi(@RequestBody Order order) {
+        log.info("[CREATE] Received request to create order via REST API notification: {}", order);
+        Order savedOrder = orderService.createOrderWithApi(order);
+        log.info("[CREATE] Order created and notification API called successfully: {}", savedOrder);
         return ResponseEntity.ok(savedOrder);
     }
 

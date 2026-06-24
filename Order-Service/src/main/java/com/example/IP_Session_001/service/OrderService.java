@@ -5,9 +5,11 @@ import java.util.List;
 
 public interface OrderService {
 
-    Order createOrder(Order order);
+    Order createOrderWithKafka(Order order);
 
     Order createOrderWithRabbitMQ(Order order);
+
+    Order createOrderWithApi(Order order);
 
     Order getOrderById(Long id);
 
