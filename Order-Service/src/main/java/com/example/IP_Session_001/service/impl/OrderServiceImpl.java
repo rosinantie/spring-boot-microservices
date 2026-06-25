@@ -2,6 +2,7 @@ package com.example.IP_Session_001.service.impl;
 
 import com.example.IP_Session_001.entity.Order;
 import com.example.IP_Session_001.feign.NotificationClient;
+import com.example.IP_Session_001.grpc.NotificationGrpcClient;
 import com.example.IP_Session_001.kafka.KafkaProducerService;
 import com.example.IP_Session_001.rabbit.RabbitMQProducerService;
 import com.example.IP_Session_001.repository.OrderRepository;
@@ -21,6 +22,7 @@ public class OrderServiceImpl implements OrderService {
     private final KafkaProducerService kafkaProducer;
     private final RabbitMQProducerService rabbitMQProducerService;
     private final NotificationClient notificationClient;
+    private final NotificationGrpcClient notificationGrpcClient;
 
     @Override
     public Order createOrderWithKafka(Order order) {
@@ -36,6 +38,16 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrderWithRabbitMQ(Order order) {
         Order saved = orderRepository.save(order);
        rabbitMQProducerService.sendEmailMessage(saved);
+        return saved;
+    }
+
+    @Override
+    public Order createOrderWithGrpc(Order order) {
+        Order saved = orderRepository.save(order);
+
+        // Synchronous gRPC call to the Notification-Service (binary, contract-first; no broker)
+        notificationGrpcClient.send(saved);
+
         return saved;
     }
 

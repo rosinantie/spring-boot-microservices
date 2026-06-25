@@ -11,6 +11,8 @@ public interface OrderService {
 
     Order createOrderWithApi(Order order);
 
+    Order createOrderWithGrpc(Order order);
+
     Order getOrderById(Long id);
 
     List<Order> getAllOrders();

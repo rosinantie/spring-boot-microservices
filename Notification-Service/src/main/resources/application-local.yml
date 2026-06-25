@@ -66,3 +66,8 @@ server:
   port: 8084
   servlet:
     context-path: /apis
+
+# gRPC server port (separate from HTTP 8084); 9091 avoids the default 9090 collision
+grpc:
+  server:
+    port: 9091

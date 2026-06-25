@@ -57,6 +57,14 @@ public class OrderController {
         return ResponseEntity.ok(savedOrder);
     }
 
+    @PostMapping("/grpc")
+    public ResponseEntity<Order> createOrderGrpc(@RequestBody Order order) {
+        log.info("[CREATE] Received request to create order via gRPC notification: {}", order);
+        Order savedOrder = orderService.createOrderWithGrpc(order);
+        log.info("[CREATE] Order created and notification gRPC call completed successfully: {}", savedOrder);
+        return ResponseEntity.ok(savedOrder);
+    }
+
     // READ ALL
     @GetMapping
     public ResponseEntity<List<Order>> getAllOrders() {

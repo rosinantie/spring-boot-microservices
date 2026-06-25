@@ -109,3 +109,10 @@ logging:
   level:
     com.netflix.discovery: DEBUG
     org.springframework: INFO
+
+grpc:
+  client:
+    notification-service: # must match @GrpcClient("notification-service")
+      address: static://localhost:9091
+      negotiation-type: plaintext
+
