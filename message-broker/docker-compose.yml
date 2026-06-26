@@ -12,12 +12,19 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
+    # Two listeners so the broker is reachable from both networks:
+    #   HOST     (9092)  -> advertised as localhost,             for apps run on the laptop
+    #   MINIKUBE (29092) -> advertised as host.minikube.internal, for pods inside minikube
+    # Kafka hands the advertised address back to clients, so each client must get one it can resolve.
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,MINIKUBE:PLAINTEXT
+      KAFKA_LISTENERS: HOST://0.0.0.0:9092,MINIKUBE://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,MINIKUBE://host.minikube.internal:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: HOST
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper

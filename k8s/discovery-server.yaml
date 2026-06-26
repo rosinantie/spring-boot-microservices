@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  labels:
+    app: discovery-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+        - name: discovery-server
+          image: discovery-server:1.0
+          imagePullPolicy: IfNotPresent   # use the image we built into minikube, don't pull from a registry
+          ports:
+            - containerPort: 8761
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: "eureka-server"
+            - name: SERVER_PORT
+              value: "8761"
+            # Don't try to fetch config from the Config-Server on startup (matches application-local.yml)
+            - name: SPRING_CLOUD_CONFIG_ENABLED
+              value: "false"
+            - name: SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED
+              value: "false"
+            # pom pulls in data-jpa + postgres, but Eureka needs no DB in the cluster — skip DataSource autoconfig so it doesn't crash
+            - name: SPRING_AUTOCONFIGURE_EXCLUDE
+              value: "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
+            # This IS the registry, so it must not register with or fetch from itself
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "false"
+          # actuator is on the classpath, so use a real health check
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8761
+            initialDelaySeconds: 40
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+  labels:
+    app: discovery-server
+spec:
+  selector:
+    app: discovery-server
+  ports:
+    - name: http
+      port: 8761
+      targetPort: 8761

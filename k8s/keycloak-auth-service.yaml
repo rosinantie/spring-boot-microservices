@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-auth-service
+  labels:
+    app: keycloak-auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-auth-service
+  template:
+    metadata:
+      labels:
+        app: keycloak-auth-service
+    spec:
+      containers:
+        - name: keycloak-auth-service
+          image: keycloak-auth-service:1.0
+          imagePullPolicy: IfNotPresent   # use the image we built into minikube, don't pull from a registry
+          ports:
+            - containerPort: 8401
+          env:
+            # 'local' profile carries the app config; we override the localhost endpoints below for the cluster
+            - name: SPRING_PROFILES_ACTIVE
+              value: "local"
+            - name: SERVER_PORT
+              value: "8401"
+            # local profile already sets cloud.config.enabled=false; belt-and-suspenders so the config import check can't block startup
+            - name: SPRING_CLOUD_CONFIG_ENABLED
+              value: "false"
+            - name: SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED
+              value: "false"
+            # Reach Eureka by service name inside the cluster (overrides the localhost:8761 in application-local.yml)
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://discovery-server:8761/eureka"
+            # --- PostgreSQL ---
+            # JPA ddl-auto=update connects to the DB at startup, so this MUST be reachable or the pod crashes.
+            # Postgres runs in Docker on the host, reachable from a pod as host.minikube.internal.
+            # If you move Postgres into the cluster, change this to its service name (e.g. jdbc:postgresql://postgres:5432/auth-service).
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://host.minikube.internal:5432/auth-service"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
+            # --- Keycloak ---
+            # Admin client (keycloak.server-url) builds lazily, so it won't crash startup, but it must resolve when used.
+            # Keycloak runs in Docker on the host, reachable from a pod as host.minikube.internal:8180.
+            - name: KEYCLOAK_SERVER_URL
+              value: "http://host.minikube.internal:8180/"
+            # OAuth2 client login + resource-server JWT validation both target the same Keycloak realm.
+            # Tokens are accepted only if their iss matches this exactly (see the api-gateway note about localhost vs host.minikube.internal).
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI
+              value: "http://host.minikube.internal:8180/realms/auth-realm"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: "http://host.minikube.internal:8180/realms/auth-realm"
+            # Zipkin isn't in the cluster yet — turn off trace sampling so the missing collector doesn't spam the logs.
+            # Set this to 1.0 (and point the endpoint below at a zipkin service) once tracing is deployed.
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "0.0"
+            - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
+              value: "http://zipkin:9411/api/v2/spans"
+          # This is a SERVLET app with server.servlet.context-path=/apis, which prefixes actuator too,
+          # so health is at /apis/actuator/health (NOT /actuator/health like the reactive api-gateway).
+          # Hitting the wrong path returns 404 -> liveness kills the pod -> CrashLoop.
+          readinessProbe:
+            httpGet:
+              path: /apis/actuator/health
+              port: 8401
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /apis/actuator/health
+              port: 8401
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-auth-service
+  labels:
+    app: keycloak-auth-service
+spec:
+  # ClusterIP: this sits behind the api-gateway, so it's internal-only (like config-server / discovery-server).
+  # Use `kubectl port-forward svc/keycloak-auth-service 8401:8401` to hit it directly from your laptop.
+  selector:
+    app: keycloak-auth-service
+  ports:
+    - name: http
+      port: 8401
+      targetPort: 8401
